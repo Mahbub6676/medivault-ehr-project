@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ record.record_id }} — MediVault{% endblock %}
+{% block page_title %}Medical Record {{ record.record_id }}{% endblock %}
+{% block page_subtitle %}{{ record.patient.full_name }} &middot; visit {{ record.visit_date|date:"d M Y" }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3 no-print">
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'medical_records:print' record.pk %}"><i class="bi bi-printer"></i> Print</a>
+  {% if user.is_doctor or user.is_admin %}
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'medical_records:edit' record.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'prescriptions:add' %}?patient={{ record.patient.pk }}&record={{ record.pk }}"><i class="bi bi-capsule"></i> Add prescription</a>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'lab_tests:add' %}?patient={{ record.patient.pk }}&record={{ record.pk }}"><i class="bi bi-clipboard2-pulse"></i> Request lab test</a>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="record-block"><h6>Visit information</h6>
+      <dl class="info-list mb-0">
+        <dt>Patient</dt><dd><a href="{% url 'patients:patient_detail' record.patient.pk %}">{{ record.patient.full_name }}</a></dd>
+        <dt>Patient ID</dt><dd>{{ record.patient.patient_id }}</dd>
+        <dt>Doctor</dt><dd>{{ record.doctor.full_name|default:"-" }}</dd>
+        <dt>Appointment</dt><dd>{% if record.appointment %}<a href="{% url 'appointments:detail' record.appointment.pk %}">{{ record.appointment.appointment_id }}</a>{% else %}-{% endif %}</dd>
+        <dt>Visit date</dt><dd>{{ record.visit_date|date:"d M Y" }}</dd>
+        <dt>Follow-up date</dt><dd>{{ record.follow_up_date|date:"d M Y"|default:"Not scheduled" }}</dd>
+      </dl>
+    </div>
+    <div class="record-block"><h6>Known allergies</h6><p class="mb-0">{{ record.patient.allergies|default:"None recorded" }}</p></div>
+  </div>
+  <div class="col-lg-8">
+    <div class="record-block"><h6>Chief complaint</h6><p class="mb-0">{{ record.chief_complaint }}</p></div>
+    <div class="record-block"><h6>Symptoms</h6><p class="mb-0">{{ record.symptoms|default:"-"|linebreaksbr }}</p></div>
+    <div class="record-block"><h6>Diagnosis</h6><p class="mb-0 fw-semibold">{{ record.diagnosis|linebreaksbr }}</p></div>
+    <div class="record-block"><h6>Treatment plan</h6><p class="mb-0">{{ record.treatment_plan|default:"-"|linebreaksbr }}</p></div>
+    <div class="record-block"><h6>Clinical notes</h6><p class="mb-0">{{ record.clinical_notes|default:"-"|linebreaksbr }}</p></div>
+
+    <div class="card mb-3">
+      <div class="card-header">Prescriptions from this visit</div>
+      <ul class="list-group list-group-flush">
+        {% for p in prescriptions %}
+          <li class="list-group-item"><a href="{% url 'prescriptions:detail' p.pk %}">{{ p.prescription_id }}</a>
+            <span class="text-muted small">— {{ p.items.count }} medicine(s), {{ p.prescribed_date|date:"d M Y" }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No prescriptions linked.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">Lab tests from this visit</div>
+      <ul class="list-group list-group-flush">
+        {% for t in lab_tests %}
+          <li class="list-group-item d-flex justify-content-between"><a href="{% url 'lab_tests:detail' t.pk %}">{{ t.test_name }}</a>
+            <span class="badge bg-{{ t.badge }}">{{ t.status }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No lab tests linked.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

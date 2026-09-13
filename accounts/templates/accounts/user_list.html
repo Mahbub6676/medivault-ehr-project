@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Users — MediVault{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block page_subtitle %}All system accounts and roles{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap gap-2 align-items-center">
+    <span><i class="bi bi-shield-lock"></i> Users ({{ page_obj.paginator.count }})</span>
+    <a href="{% url 'accounts:user_add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-plus-lg"></i> Add user</a>
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-5"><input class="form-control" name="q" value="{{ query }}" placeholder="Search name, username or e-mail"></div>
+      <div class="col-md-4">
+        <select class="form-select" name="role">
+          <option value="">All roles</option>
+          {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Name</th><th>Username</th><th>E-mail</th><th>Role</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        {% for u in page_obj %}
+          <tr>
+            <td>{{ u.full_name }}</td>
+            <td><code>{{ u.username }}</code></td>
+            <td>{{ u.email|default:"-" }}</td>
+            <td><span class="badge bg-primary-subtle text-primary">{{ u.get_role_display }}</span></td>
+            <td>{% if u.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'accounts:user_edit' u.pk %}"><i class="bi bi-pencil"></i></a>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'accounts:user_toggle' u.pk %}" data-confirm="Toggle this account status?"><i class="bi bi-power"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No users found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

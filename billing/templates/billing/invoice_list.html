@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Billing — MediVault{% endblock %}
+{% block page_title %}Billing &amp; Invoices{% endblock %}
+{% block page_subtitle %}Patient billing, payments, and financial management{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+  {% include "dashboard/_stat.html" with icon="bi-cash-stack" color="bg-mv-blue" value=totals.total label="Total Billed" %}
+  {% include "dashboard/_stat.html" with icon="bi-check2-circle" color="bg-mv-green" value=totals.paid label="Paid" %}
+  {% include "dashboard/_stat.html" with icon="bi-hourglass-split" color="bg-mv-amber" value=totals.pending label="Pending" %}
+  {% include "dashboard/_stat.html" with icon="bi-receipt" color="bg-mv-teal" value=page_obj.paginator.count label="Invoices" %}
+</div>
+
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-receipt"></i> Invoices</span>
+    {% if user.is_admin or user.is_receptionist %}
+      <a href="{% url 'billing:add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-plus-lg"></i> Generate invoice</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-6"><input class="form-control" name="q" value="{{ query }}" placeholder="Invoice ID or patient"></div>
+      <div class="col-md-3"><select class="form-select" name="status"><option value="">All statuses</option>
+        {% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="col-md-3 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Invoice</th><th>Patient</th><th>Issued</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for b in page_obj %}
+          <tr><td><span class="badge bg-primary-subtle text-primary">{{ b.invoice_id }}</span></td>
+            <td>{{ b.patient.full_name }}</td><td>{{ b.issued_date|date:"d M Y" }}</td>
+            <td><strong>{{ b.amount }}</strong></td><td>{{ b.payment_method|default:"-" }}</td>
+            <td><span class="badge bg-{{ b.badge }}">{{ b.payment_status }}</span></td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'billing:detail' b.pk %}"><i class="bi bi-eye"></i></a></td></tr>
+        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No invoices found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

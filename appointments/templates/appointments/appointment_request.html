@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Book Appointment — MediVault{% endblock %}
+{% block page_title %}Book an Appointment{% endblock %}
+{% block page_subtitle %}Select a doctor, preferred date, and time slot{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white d-flex align-items-center gap-2 py-3">
+        <i class="bi bi-calendar-plus-fill fs-5"></i>
+        <h5 class="mb-0 fw-semibold">Online Appointment Request</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "partials/form_fields.html" %}
+          <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-primary px-4"><i class="bi bi-check-circle-fill me-1"></i> Submit Request</button>
+            <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

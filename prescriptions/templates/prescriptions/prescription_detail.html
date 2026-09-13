@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ prescription.prescription_id }} — MediVault{% endblock %}
+{% block page_title %}Prescription {{ prescription.prescription_id }}{% endblock %}
+{% block page_subtitle %}{{ prescription.patient.full_name }} &middot; {{ prescription.prescribed_date|date:"d M Y" }}{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3 no-print">
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'prescriptions:print' prescription.pk %}"><i class="bi bi-printer"></i> Print</a>
+  {% if user.is_doctor or user.is_admin %}
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'prescriptions:edit' prescription.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="record-block"><h6>Details</h6>
+      <dl class="info-list mb-0">
+        <dt>Patient</dt><dd><a href="{% url 'patients:patient_detail' prescription.patient.pk %}">{{ prescription.patient.full_name }}</a></dd>
+        <dt>Doctor</dt><dd>{{ prescription.doctor.full_name|default:"-" }}</dd>
+        <dt>Medical record</dt><dd>{% if prescription.medical_record %}<a href="{% url 'medical_records:detail' prescription.medical_record.pk %}">{{ prescription.medical_record.record_id }}</a>{% else %}-{% endif %}</dd>
+        <dt>Prescribed date</dt><dd>{{ prescription.prescribed_date|date:"d M Y" }}</dd>
+      </dl>
+    </div>
+    <div class="record-block"><h6>Instructions</h6><p class="mb-0">{{ prescription.instructions|default:"-"|linebreaksbr }}</p></div>
+    <div class="record-block"><h6>Notes</h6><p class="mb-0">{{ prescription.notes|default:"-"|linebreaksbr }}</p></div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">Medicines ({{ prescription.items.count }})</div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Route</th><th>Instruction</th></tr></thead>
+          <tbody>
+          {% for i in prescription.items.all %}
+            <tr><td class="fw-semibold">{{ i.medicine_name }}</td><td>{{ i.dosage }}</td><td>{{ i.frequency }}</td>
+              <td>{{ i.duration }}</td><td>{{ i.route }}</td><td>{{ i.special_instruction|default:"-" }}</td></tr>
+          {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No medicines added.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

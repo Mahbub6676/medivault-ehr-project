@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }} — MediVault{% endblock %}
+{% block page_title %}{{ patient.full_name }}{% endblock %}
+{% block page_subtitle %}{{ patient.patient_id }} &middot; {{ patient.gender }} &middot; {{ patient.age }} years{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3 no-print">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'patients:patient_print' patient.pk %}"><i class="bi bi-printer"></i> Print summary</a>
+  {% if user.is_admin or user.is_receptionist %}
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'patients:patient_edit' patient.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'appointments:add' %}"><i class="bi bi-calendar-plus"></i> Book appointment</a>
+    <a class="btn btn-outline-danger btn-sm" href="{% url 'patients:patient_toggle' patient.pk %}" data-confirm="Change the active status of this patient?"><i class="bi bi-power"></i> {% if patient.is_active %}Deactivate{% else %}Activate{% endif %}</a>
+  {% endif %}
+  {% if user.is_doctor or user.is_admin %}
+    <a class="btn btn-primary btn-sm" href="{% url 'medical_records:add' %}?patient={{ patient.pk }}"><i class="bi bi-journal-plus"></i> New medical record</a>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'prescriptions:add' %}?patient={{ patient.pk }}"><i class="bi bi-capsule"></i> New prescription</a>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'lab_tests:add' %}?patient={{ patient.pk }}"><i class="bi bi-clipboard2-pulse"></i> New lab test</a>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="record-block">
+      <h6>Personal information</h6>
+      <dl class="info-list mb-0">
+        <dt>Full name</dt><dd>{{ patient.full_name }}</dd>
+        <dt>Patient ID</dt><dd>{{ patient.patient_id }}</dd>
+        <dt>Date of birth</dt><dd>{{ patient.date_of_birth|date:"d M Y"|default:"-" }} ({{ patient.age }} yrs)</dd>
+        <dt>Gender</dt><dd>{{ patient.gender }}</dd>
+        <dt>Phone</dt><dd>{{ patient.phone|default:"-" }}</dd>
+        <dt>E-mail</dt><dd>{{ patient.user.email|default:"-" }}</dd>
+        <dt>Address</dt><dd>{{ patient.address|default:"-" }}</dd>
+      </dl>
+    </div>
+    <div class="record-block">
+      <h6>Medical information</h6>
+      <dl class="info-list mb-0">
+        <dt>Blood group</dt><dd>{{ patient.blood_group }}</dd>
+        <dt>Allergies</dt><dd>{{ patient.allergies|default:"None recorded" }}</dd>
+        <dt>Chronic conditions</dt><dd>{{ patient.chronic_conditions|default:"None recorded" }}</dd>
+      </dl>
+    </div>
+    <div class="record-block">
+      <h6>Emergency contact</h6>
+      <dl class="info-list mb-0">
+        <dt>Name</dt><dd>{{ patient.emergency_contact_name|default:"-" }}</dd>
+        <dt>Phone</dt><dd>{{ patient.emergency_contact_phone|default:"-" }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-appts">Appointments</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-records">Medical history</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rx">Prescriptions</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lab">Lab results</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-bill">Billing</button></li>
+    </ul>
+    <div class="tab-content card border-top-0" style="border-radius:0 0 14px 14px;">
+      <div class="tab-pane fade show active p-3" id="tab-appts">
+        <div class="table-responsive"><table class="table table-sm">
+          <thead><tr><th>ID</th><th>Date</th><th>Doctor</th><th>Reason</th><th>Status</th></tr></thead><tbody>
+          {% for a in appointments %}<tr><td><a href="{% url 'appointments:detail' a.pk %}">{{ a.appointment_id }}</a></td>
+            <td>{{ a.appointment_date|date:"d M Y" }} {{ a.appointment_time|time:"H:i" }}</td><td>{{ a.doctor.full_name }}</td>
+            <td>{{ a.reason|truncatechars:30 }}</td><td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="text-muted text-center py-3">No appointments.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div class="tab-pane fade p-3" id="tab-records">
+        <div class="table-responsive"><table class="table table-sm">
+          <thead><tr><th>Record</th><th>Visit date</th><th>Doctor</th><th>Diagnosis</th><th>Follow-up</th></tr></thead><tbody>
+          {% for r in records %}<tr><td><a href="{% url 'medical_records:detail' r.pk %}">{{ r.record_id }}</a></td>
+            <td>{{ r.visit_date|date:"d M Y" }}</td><td>{{ r.doctor.full_name|default:"-" }}</td>
+            <td>{{ r.diagnosis|truncatechars:40 }}</td><td>{{ r.follow_up_date|date:"d M Y"|default:"-" }}</td></tr>
+          {% empty %}<tr><td colspan="5" class="text-muted text-center py-3">No medical records.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div class="tab-pane fade p-3" id="tab-rx">
+        <div class="table-responsive"><table class="table table-sm">
+          <thead><tr><th>Prescription</th><th>Date</th><th>Doctor</th><th>Medicines</th></tr></thead><tbody>
+          {% for p in prescriptions %}<tr><td><a href="{% url 'prescriptions:detail' p.pk %}">{{ p.prescription_id }}</a></td>
+            <td>{{ p.prescribed_date|date:"d M Y" }}</td><td>{{ p.doctor.full_name|default:"-" }}</td><td>{{ p.items.count }}</td></tr>
+          {% empty %}<tr><td colspan="4" class="text-muted text-center py-3">No prescriptions.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div class="tab-pane fade p-3" id="tab-lab">
+        <div class="table-responsive"><table class="table table-sm">
+          <thead><tr><th>Test ID</th><th>Test</th><th>Date</th><th>Result</th><th>Status</th></tr></thead><tbody>
+          {% for t in lab_tests %}<tr><td><a href="{% url 'lab_tests:detail' t.pk %}">{{ t.test_id }}</a></td>
+            <td>{{ t.test_name }}</td><td>{{ t.test_date|date:"d M Y" }}</td>
+            <td>{{ t.result|default:"Pending"|truncatechars:28 }}</td><td><span class="badge bg-{{ t.badge }}">{{ t.status }}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="text-muted text-center py-3">No lab tests.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div class="tab-pane fade p-3" id="tab-bill">
+        <div class="table-responsive"><table class="table table-sm">
+          <thead><tr><th>Invoice</th><th>Issued</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+          {% for b in bills %}<tr><td><a href="{% url 'billing:detail' b.pk %}">{{ b.invoice_id }}</a></td>
+            <td>{{ b.issued_date|date:"d M Y" }}</td><td>{{ b.amount }}</td>
+            <td><span class="badge bg-{{ b.badge }}">{{ b.payment_status }}</span></td></tr>
+          {% empty %}<tr><td colspan="4" class="text-muted text-center py-3">No invoices.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Doctors — MediVault{% endblock %}
+{% block page_title %}Doctors{% endblock %}
+{% block page_subtitle %}Medical staff directory{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-person-badge"></i> {{ page_obj.paginator.count }} doctor(s)</span>
+    {% if user.is_admin %}<a href="{% url 'doctors:doctor_add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-plus-lg"></i> Add doctor</a>{% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-5"><input class="form-control" name="q" value="{{ query }}" placeholder="Name, Doctor ID or specialization"></div>
+      <div class="col-md-4"><select class="form-select" name="department">
+        <option value="">All departments</option>
+        {% for d in departments %}<option value="{{ d.pk }}" {% if department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>{% endfor %}
+      </select></div>
+      <div class="col-md-3 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Doctor ID</th><th>Name</th><th>Department</th><th>Specialization</th><th>Experience</th><th>Fee</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for d in page_obj %}
+          <tr><td><span class="badge bg-primary-subtle text-primary">{{ d.doctor_id }}</span></td>
+            <td><a href="{% url 'doctors:doctor_detail' d.pk %}">{{ d.full_name }}</a></td>
+            <td>{{ d.department.name|default:"-" }}</td><td>{{ d.specialization }}</td>
+            <td>{{ d.experience }} yrs</td><td>{{ d.consultation_fee }}</td>
+            <td>{% if d.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'doctors:doctor_detail' d.pk %}"><i class="bi bi-eye"></i></a></td></tr>
+        {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No doctors found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

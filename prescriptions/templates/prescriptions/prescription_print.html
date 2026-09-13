@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Print {{ prescription.prescription_id }}{% endblock %}
+{% block page_title %}Prescription{% endblock %}
+{% block content %}
+<div class="mb-3 no-print d-flex gap-2">
+  <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+  <button class="btn btn-success" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</button>
+  <a class="btn btn-outline-secondary" href="{% url 'prescriptions:detail' prescription.pk %}">Back</a>
+</div>
+
+<div class="print-sheet" id="printContent">
+  <div class="print-header d-flex justify-content-between align-items-end">
+    <div><h2>MediVault EHR</h2><small class="text-muted">Secure, Simple &amp; Smart Healthcare Records</small></div>
+    <div class="text-end">
+      <strong>{{ prescription.doctor.full_name|default:"Attending doctor" }}</strong><br>
+      <small>{{ prescription.doctor.qualification }}<br>{{ prescription.doctor.department.name|default:"" }}</small>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mb-3">
+    <div>
+      <strong>Patient:</strong> {{ prescription.patient.full_name }} ({{ prescription.patient.patient_id }})<br>
+      <strong>Age / Gender:</strong> {{ prescription.patient.age }} / {{ prescription.patient.gender }}<br>
+      <strong>Allergies:</strong> {{ prescription.patient.allergies|default:"None recorded" }}
+    </div>
+    <div class="text-end">
+      <strong>Prescription:</strong> {{ prescription.prescription_id }}<br>
+      <strong>Date:</strong> {{ prescription.prescribed_date|date:"d M Y" }}
+    </div>
+  </div>
+
+  <h1 style="font-size:2rem;">&#8478;</h1>
+  <table class="table table-sm table-bordered">
+    <thead><tr><th>#</th><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Route</th><th>Instruction</th></tr></thead>
+    <tbody>
+      {% for i in prescription.items.all %}
+        <tr><td>{{ forloop.counter }}</td><td>{{ i.medicine_name }}</td><td>{{ i.dosage }}</td><td>{{ i.frequency }}</td>
+          <td>{{ i.duration }}</td><td>{{ i.route }}</td><td>{{ i.special_instruction|default:"-" }}</td></tr>
+      {% empty %}<tr><td colspan="7">No medicines.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+
+  <p><strong>Advice:</strong> {{ prescription.instructions|default:"-" }}</p>
+  {% if prescription.medical_record.follow_up_date %}
+    <p><strong>Follow-up:</strong> {{ prescription.medical_record.follow_up_date|date:"d M Y" }}</p>
+  {% endif %}
+
+  <div class="mt-5 d-flex justify-content-between">
+    <div><hr style="width:180px"><small>Doctor signature</small></div>
+    <div class="text-end"><small class="text-muted">Confidential Medical Prescription &mdash; MediVault EHR System</small></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+  const element = document.getElementById('printContent');
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5],
+    filename: 'Prescription_{{ prescription.prescription_id }}.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+</script>
+{% endblock %}
+

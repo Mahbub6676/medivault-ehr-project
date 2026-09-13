@@ -1,0 +1,10 @@
+{
+  "name": "medivault-ehr",
+  "private": true,
+  "description": "Sandbox launcher only. MediVault EHR is a pure Python/Django project - these scripts simply call Python. No Node.js dependencies are used and this file can be deleted safely.",
+  "scripts": {
+    "build": "python3 run_server.py --build-only",
+    "start": "python3 run_server.py",
+    "dev": "python3 manage.py runserver 0.0.0.0:8000"
+  }
+}

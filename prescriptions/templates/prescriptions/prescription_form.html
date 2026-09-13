@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — MediVault{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Add as many medicines as required{% endblock %}
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="card mb-3">
+    <div class="card-header"><i class="bi bi-capsule"></i> Prescription details</div>
+    <div class="card-body">{% include "partials/form_fields.html" %}</div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header d-flex align-items-center">
+      Medicines
+      <button type="button" id="add-medicine" class="btn btn-sm btn-outline-primary ms-auto">
+        <i class="bi bi-plus-lg"></i> Add medicine</button>
+    </div>
+    <div class="card-body">
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+      <div id="medicine-rows">
+        {% for item_form in formset %}
+          <div class="medicine-row border rounded p-3 mb-3">
+            {{ item_form.id }}
+            <div class="row g-2">
+              {% for field in item_form.visible_fields %}
+                {% if field.name != 'DELETE' %}
+                  <div class="col-md-4">
+                    <label class="form-label small">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <div class="d-flex align-items-center mt-2">
+              <div class="form-check me-auto d-none">{{ item_form.DELETE }}</div>
+              <button type="button" class="btn btn-sm btn-outline-danger remove-medicine"><i class="bi bi-trash"></i> Remove</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Template used by vanilla JavaScript to clone a new medicine row -->
+      <template id="empty-medicine-form">
+        <div class="medicine-row border rounded p-3 mb-3">
+          <div class="row g-2">
+            {% for field in formset.empty_form.visible_fields %}
+              {% if field.name != 'DELETE' %}
+                <div class="col-md-4"><label class="form-label small">{{ field.label }}</label>{{ field }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-medicine ms-auto"><i class="bi bi-trash"></i> Remove</button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary"><i class="bi bi-save"></i> Save prescription</button>
+    <a href="{% url 'prescriptions:list' %}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>MediVaultFormset.init('{{ formset.prefix }}');</script>
+{% endblock %}

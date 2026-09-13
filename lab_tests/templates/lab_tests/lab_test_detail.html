@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ test.test_id }} — MediVault{% endblock %}
+{% block page_title %}Lab Test {{ test.test_id }}{% endblock %}
+{% block page_subtitle %}{{ test.test_name }}{% endblock %}
+{% block content %}
+{% if user.is_doctor or user.is_admin %}
+<div class="mb-3"><a class="btn btn-sm btn-outline-primary" href="{% url 'lab_tests:edit' test.pk %}"><i class="bi bi-pencil"></i> Update result / status</a></div>
+{% endif %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="record-block"><h6>Test information</h6>
+      <dl class="info-list mb-0">
+        <dt>Test ID</dt><dd>{{ test.test_id }}</dd>
+        <dt>Test name</dt><dd>{{ test.test_name }}</dd>
+        <dt>Patient</dt><dd><a href="{% url 'patients:patient_detail' test.patient.pk %}">{{ test.patient.full_name }}</a></dd>
+        <dt>Requested by</dt><dd>{{ test.doctor.full_name|default:"-" }}</dd>
+        <dt>Medical record</dt><dd>{% if test.medical_record %}<a href="{% url 'medical_records:detail' test.medical_record.pk %}">{{ test.medical_record.record_id }}</a>{% else %}-{% endif %}</dd>
+        <dt>Test date</dt><dd>{{ test.test_date|date:"d M Y" }}</dd>
+        <dt>Status</dt><dd><span class="badge bg-{{ test.badge }}">{{ test.status }}</span></dd>
+      </dl>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="record-block"><h6>Result</h6><p class="mb-0">{{ test.result|default:"Result not published yet."|linebreaksbr }}</p></div>
+    <div class="record-block"><h6>Reference range</h6><p class="mb-0">{{ test.reference_range|default:"-" }}</p></div>
+    <div class="record-block"><h6>Doctor notes</h6><p class="mb-0">{{ test.notes|default:"-"|linebreaksbr }}</p></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — MediVault{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_subtitle %}Hospital wide statistics{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% include "dashboard/_stat.html" with icon="bi-people" color="bg-mv-blue" value=total_patients label="Total Patients" %}
+  {% include "dashboard/_stat.html" with icon="bi-person-badge" color="bg-mv-teal" value=total_doctors label="Total Doctors" %}
+  {% include "dashboard/_stat.html" with icon="bi-calendar-check" color="bg-mv-dark" value=total_appointments label="Appointments" %}
+  {% include "dashboard/_stat.html" with icon="bi-calendar-day" color="bg-mv-amber" value=today_appointments label="Today's Appointments" %}
+  {% include "dashboard/_stat.html" with icon="bi-check2-circle" color="bg-mv-green" value=completed_appointments label="Completed Visits" %}
+  {% include "dashboard/_stat.html" with icon="bi-receipt" color="bg-mv-rose" value=pending_bills label="Pending Bills" %}
+  {% include "dashboard/_stat.html" with icon="bi-diagram-3" color="bg-mv-blue" value=total_departments label="Departments" %}
+  {% include "dashboard/_stat.html" with icon="bi-journal-medical" color="bg-mv-teal" value=total_records label="Medical Records" %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card h-100"><div class="card-header">Monthly patient registrations</div>
+      <div class="card-body"><canvas id="chartPatients" height="130"></canvas></div></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card h-100"><div class="card-header">Appointments by status</div>
+      <div class="card-body"><canvas id="chartStatus" height="170"></canvas></div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-header">Patients by department</div>
+      <div class="card-body"><canvas id="chartDept" height="170"></canvas></div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Recent appointments</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for a in recent_appointments %}
+            <tr><td><a href="{% url 'appointments:detail' a.pk %}">{{ a.appointment_id }}</a></td>
+              <td>{{ a.patient.full_name }}</td><td>{{ a.doctor.full_name }}</td>
+              <td>{{ a.appointment_date|date:"d M" }} {{ a.appointment_time|time:"H:i" }}</td>
+              <td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="text-muted text-center py-3">No appointments yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const months = {{ chart_months|safe }};
+  new Chart(document.getElementById('chartPatients'), {
+    type: 'line',
+    data: { labels: months, datasets: [{ label: 'New patients', data: {{ chart_monthly_patients|safe }},
+      borderColor: '#0b5ed7', backgroundColor: 'rgba(11,94,215,.15)', fill: true, tension: .35 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: { labels: {{ chart_status_labels|safe }}, datasets: [{ data: {{ chart_status_values|safe }},
+      backgroundColor: ['#6c757d', '#0dcaf0', '#198754', '#dc3545', '#ffc107'] }] }
+  });
+  new Chart(document.getElementById('chartDept'), {
+    type: 'bar',
+    data: { labels: {{ chart_dept_labels|safe }}, datasets: [{ label: 'Patients', data: {{ chart_dept_values|safe }},
+      backgroundColor: '#0fa3a3' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+</script>
+{% endblock %}

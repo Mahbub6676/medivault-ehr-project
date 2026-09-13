@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}My Health — MediVault{% endblock %}
+{% block page_title %}Hello, {{ patient.full_name }}{% endblock %}
+{% block page_subtitle %}Patient ID {{ patient.patient_id }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% include "dashboard/_stat.html" with icon="bi-journal-medical" color="bg-mv-blue" value=total_visits label="Total Visits" %}
+  {% include "dashboard/_stat.html" with icon="bi-capsule" color="bg-mv-teal" value=active_prescriptions label="Prescriptions" %}
+  {% include "dashboard/_stat.html" with icon="bi-receipt" color="bg-mv-amber" value=pending_bills label="Pending Bills" %}
+  {% include "dashboard/_stat.html" with icon="bi-cash-coin" color="bg-mv-rose" value=pending_amount label="Amount Due" %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Next appointment</div>
+      <div class="card-body">
+        {% if upcoming_appointment %}
+          <h5 class="mb-1">{{ upcoming_appointment.appointment_date|date:"l, d M Y" }} at {{ upcoming_appointment.appointment_time|time:"H:i" }}</h5>
+          <p class="mb-1">{{ upcoming_appointment.doctor.full_name }} — {{ upcoming_appointment.doctor.specialization }}</p>
+          <p class="text-muted mb-2">Reason: {{ upcoming_appointment.reason }}</p>
+          <span class="badge bg-{{ upcoming_appointment.badge }}">{{ upcoming_appointment.status }}</span>
+        {% else %}
+          <p class="text-muted mb-0">You have no upcoming appointments. Please contact the reception desk to book one.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Most recent diagnosis</div>
+      <div class="card-body">
+        {% if last_record %}
+          <h6 class="text-primary">{{ last_record.record_id }} &middot; {{ last_record.visit_date|date:"d M Y" }}</h6>
+          <p class="mb-1"><strong>Diagnosis:</strong> {{ recent_diagnosis }}</p>
+          <p class="mb-2 text-muted"><strong>Doctor:</strong> {{ last_record.doctor.full_name|default:"-" }}</p>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'medical_records:detail' last_record.pk %}">View full record</a>
+        {% else %}
+          <p class="text-muted mb-0">No medical records yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">My prescriptions</div>
+      <ul class="list-group list-group-flush">
+        {% for p in prescriptions %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'prescriptions:detail' p.pk %}">{{ p.prescription_id }}</a>
+            <span class="small text-muted">{{ p.prescribed_date|date:"d M Y" }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No prescriptions yet.</li>{% endfor %}
+      </ul></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">My lab results</div>
+      <ul class="list-group list-group-flush">
+        {% for t in lab_tests %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'lab_tests:detail' t.pk %}">{{ t.test_name }}</a>
+            <span class="badge bg-{{ t.badge }}">{{ t.status }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No lab tests yet.</li>{% endfor %}
+      </ul></div>
+  </div>
+</div>
+{% endblock %}

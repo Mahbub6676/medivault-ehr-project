@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Reception Dashboard — MediVault{% endblock %}
+{% block page_title %}Reception Desk{% endblock %}
+{% block page_subtitle %}Patient registration and appointment scheduling{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% include "dashboard/_stat.html" with icon="bi-people" color="bg-mv-blue" value=total_patients label="Total Patients" %}
+  {% include "dashboard/_stat.html" with icon="bi-calendar-day" color="bg-mv-teal" value=today_appointments label="Today's Appointments" %}
+  {% include "dashboard/_stat.html" with icon="bi-hourglass-split" color="bg-mv-amber" value=pending_appointments label="Pending Appointments" %}
+  {% include "dashboard/_stat.html" with icon="bi-person-plus" color="bg-mv-green" value=today_new_patients label="New Patients Today" %}
+</div>
+
+<div class="d-flex gap-2 my-3 flex-wrap">
+  <a href="{% url 'patients:patient_add' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Register patient</a>
+  <a href="{% url 'appointments:add' %}" class="btn btn-outline-primary"><i class="bi bi-calendar-plus"></i> New appointment</a>
+  <a href="{% url 'billing:add' %}" class="btn btn-outline-secondary"><i class="bi bi-receipt"></i> Generate invoice</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Today's schedule</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          {% for a in today_list %}
+            <tr><td>{{ a.appointment_time|time:"H:i" }}</td><td>{{ a.patient.full_name }}</td>
+              <td>{{ a.doctor.full_name }}</td><td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'appointments:detail' a.pk %}">Open</a></td></tr>
+          {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">No appointments scheduled for today.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header d-flex">Pending invoices <span class="badge bg-warning text-dark ms-auto">{{ pending_bills }}</span></div>
+      <ul class="list-group list-group-flush">
+        {% for b in unpaid_invoices %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'billing:detail' b.pk %}">{{ b.invoice_id }}</a>
+            <span>{{ b.patient.full_name }} — <strong>{{ b.amount }}</strong></span></li>
+        {% empty %}<li class="list-group-item text-muted">No pending invoices.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">Recently registered patients</div>
+      <ul class="list-group list-group-flush">
+        {% for p in recent_patients %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'patients:patient_detail' p.pk %}">{{ p.full_name }}</a>
+            <span class="small text-muted">{{ p.patient_id }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No patients yet.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

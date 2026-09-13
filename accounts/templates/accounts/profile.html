@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My Account — MediVault{% endblock %}
+{% block page_title %}My Account{% endblock %}
+{% block page_subtitle %}Update your personal details{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card p-4 text-center">
+      <div class="mv-avatar mx-auto mb-2" style="width:64px;height:64px;font-size:1.4rem;">{{ user.initials }}</div>
+      <h5 class="mb-0">{{ user.full_name }}</h5>
+      <p class="text-muted small">{{ user.get_role_display }}</p>
+      <dl class="info-list text-start mb-0">
+        <dt>Username</dt><dd>{{ user.username }}</dd>
+        <dt>E-mail</dt><dd>{{ user.email|default:"-" }}</dd>
+        <dt>Phone</dt><dd>{{ user.phone|default:"-" }}</dd>
+        <dt>Joined</dt><dd>{{ user.date_joined|date:"d M Y" }}</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">Edit profile</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "partials/form_fields.html" %}
+          <button class="btn btn-primary mt-3"><i class="bi bi-save"></i> Save changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

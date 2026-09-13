@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ doctor.full_name }} — MediVault{% endblock %}
+{% block page_title %}{{ doctor.full_name }}{% endblock %}
+{% block page_subtitle %}{{ doctor.doctor_id }} &middot; {{ doctor.specialization }}{% endblock %}
+{% block content %}
+{% if user.is_admin %}
+<div class="mb-3 d-flex gap-2">
+  <a class="btn btn-sm btn-outline-primary" href="{% url 'doctors:doctor_edit' doctor.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+  <a class="btn btn-sm btn-outline-danger" href="{% url 'doctors:doctor_toggle' doctor.pk %}" data-confirm="Change this doctor's account status?"><i class="bi bi-power"></i> {% if doctor.is_active %}Deactivate{% else %}Activate{% endif %}</a>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="record-block">
+      <h6>Profile</h6>
+      <dl class="info-list mb-0">
+        <dt>Doctor ID</dt><dd>{{ doctor.doctor_id }}</dd>
+        <dt>Department</dt><dd>{{ doctor.department.name|default:"-" }}</dd>
+        <dt>Specialization</dt><dd>{{ doctor.specialization }}</dd>
+        <dt>Qualification</dt><dd>{{ doctor.qualification }}</dd>
+        <dt>Experience</dt><dd>{{ doctor.experience }} years</dd>
+        <dt>Consultation fee</dt><dd>{{ doctor.consultation_fee }}</dd>
+        <dt>Available days</dt><dd>{{ doctor.available_days|default:"-" }}</dd>
+        <dt>Available time</dt><dd>{{ doctor.available_time|default:"-" }}</dd>
+        <dt>E-mail</dt><dd>{{ doctor.user.email|default:"-" }}</dd>
+        <dt>Status</dt><dd>{% if doctor.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</dd>
+      </dl>
+    </div>
+    <div class="record-block"><h6>Biography</h6><p class="mb-0">{{ doctor.bio|default:"No biography provided." }}</p></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="row g-3 mb-3">
+      {% include "dashboard/_stat.html" with icon="bi-calendar-check" color="bg-mv-blue" value=total_appointments label="Appointments" %}
+      {% include "dashboard/_stat.html" with icon="bi-journal-medical" color="bg-mv-teal" value=total_records label="Medical Records" %}
+    </div>
+    <div class="card">
+      <div class="card-header">Latest appointments</div>
+      <div class="table-responsive"><table class="table table-sm mb-0">
+        <thead><tr><th>ID</th><th>Patient</th><th>Date</th><th>Status</th></tr></thead><tbody>
+        {% for a in appointments %}<tr><td><a href="{% url 'appointments:detail' a.pk %}">{{ a.appointment_id }}</a></td>
+          <td>{{ a.patient.full_name }}</td><td>{{ a.appointment_date|date:"d M Y" }} {{ a.appointment_time|time:"H:i" }}</td>
+          <td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td></tr>
+        {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No appointments.</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

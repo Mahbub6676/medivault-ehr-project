@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}MediVault EHR — Secure, Simple & Smart Healthcare Records{% endblock %}
+
+{% block content %}
+<section class="hero text-center">
+  <div class="container">
+    <span class="badge bg-light text-primary mb-3">Enterprise Electronic Health Record System</span>
+    <h1 class="display-4">MediVault EHR</h1>
+    <p class="lead mb-4">Secure, Simple &amp; Smart Healthcare Records.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a href="{% url 'accounts:login' %}" class="btn btn-light btn-lg px-4"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+      <a href="#features" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+    </div>
+  </div>
+</section>
+
+
+<div class="container py-5" id="features">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">One system for the whole patient journey</h2>
+    <p class="text-muted">Registration → Appointment → Consultation → Medical Record → Prescription → Lab Test → Billing → Follow-up</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="feature-card">
+        <i class="bi bi-people"></i>
+        <h5 class="mt-3">Patient Management</h5>
+        <p class="text-muted mb-0">Register patients, keep demographics, allergies, chronic conditions and emergency contacts in one profile.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature-card">
+        <i class="bi bi-calendar-check"></i>
+        <h5 class="mt-3">Appointments</h5>
+        <p class="text-muted mb-0">Book, confirm, complete or cancel visits. Double-booking of a doctor slot is blocked automatically.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature-card">
+        <i class="bi bi-journal-medical"></i>
+        <h5 class="mt-3">Medical Records</h5>
+        <p class="text-muted mb-0">Chief complaint, symptoms, diagnosis, treatment plan, clinical notes and follow-up date for every visit.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature-card">
+        <i class="bi bi-capsule"></i>
+        <h5 class="mt-3">Prescriptions</h5>
+        <p class="text-muted mb-0">Multiple medicines per prescription with dosage, frequency, duration and a print-friendly layout.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-md-4">
+      <div class="feature-card"><i class="bi bi-clipboard2-pulse"></i>
+        <h5 class="mt-3">Lab Tests</h5>
+        <p class="text-muted mb-0">Request tests, publish results with reference ranges and let patients read them safely.</p></div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card"><i class="bi bi-receipt"></i>
+        <h5 class="mt-3">Billing</h5>
+        <p class="text-muted mb-0">Generate invoices, track payment status and print a clean invoice sheet.</p></div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card"><i class="bi bi-shield-lock"></i>
+        <h5 class="mt-3">Role Based Access</h5>
+        <p class="text-muted mb-0">Admin, Doctor, Receptionist and Patient roles. Patients only ever see their own data.</p></div>
+    </div>
+  </div>
+
+  <div class="alert alert-primary mt-5 mb-0 d-flex align-items-center gap-2">
+    <i class="bi bi-shield-check fs-4"></i>
+    <div>
+      <strong>Security &amp; Compliance Standard:</strong> MediVault EHR enforces strict Role-Based Access Control (RBAC), HIPAA-style Audit Trail logging, patient data isolation, and encrypted health record management.
+    </div>
+  </div>
+</div>
+{% endblock %}
+

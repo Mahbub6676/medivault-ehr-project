@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard — MediVault{% endblock %}
+{% block page_title %}Welcome, {{ doctor.full_name }}{% endblock %}
+{% block page_subtitle %}{{ doctor.specialization }} &middot; {{ doctor.department.name|default:"No department" }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% include "dashboard/_stat.html" with icon="bi-calendar-day" color="bg-mv-blue" value=today_count label="Today's Appointments" %}
+  {% include "dashboard/_stat.html" with icon="bi-people" color="bg-mv-teal" value=total_patients label="My Patients" %}
+  {% include "dashboard/_stat.html" with icon="bi-check2-circle" color="bg-mv-green" value=completed_visits label="Completed Visits" %}
+  {% include "dashboard/_stat.html" with icon="bi-hourglass-split" color="bg-mv-amber" value=pending_appointments label="Pending Appointments" %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center">Upcoming appointments
+        <a href="{% url 'medical_records:add' %}" class="btn btn-sm btn-primary ms-auto"><i class="bi bi-plus-lg"></i> New record</a></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Date</th><th>Time</th><th>Patient</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          {% for a in upcoming %}
+            <tr><td>{{ a.appointment_date|date:"d M Y" }}</td><td>{{ a.appointment_time|time:"H:i" }}</td>
+              <td><a href="{% url 'patients:patient_detail' a.patient.pk %}">{{ a.patient.full_name }}</a></td>
+              <td>{{ a.reason|truncatechars:28 }}</td>
+              <td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'medical_records:add' %}?patient={{ a.patient.pk }}&appointment={{ a.pk }}">Consult</a></td></tr>
+          {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No upcoming appointments.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header">Recent medical records</div>
+      <ul class="list-group list-group-flush">
+        {% for r in recent_records %}
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div><a href="{% url 'medical_records:detail' r.pk %}" class="fw-semibold">{{ r.record_id }}</a>
+              <div class="small text-muted">{{ r.patient.full_name }} — {{ r.diagnosis|truncatechars:34 }}</div></div>
+            <span class="small text-muted">{{ r.visit_date|date:"d M" }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No records created yet.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">Pending lab tests</div>
+      <ul class="list-group list-group-flush">
+        {% for t in pending_labs %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'lab_tests:detail' t.pk %}">{{ t.test_name }}</a>
+            <span class="small text-muted">{{ t.patient.full_name }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No pending lab tests.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

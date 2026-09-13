@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Login — MediVault EHR{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <div class="display-6 text-primary"><i class="bi bi-hospital"></i></div>
+      <h3 class="fw-bold mb-1">MediVault EHR</h3>
+      <p class="text-muted small mb-0">Secure, Simple &amp; Smart Healthcare Records</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} py-2 small">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Username or e-mail</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <button class="btn btn-primary w-100 py-2" type="submit"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+    </form>
+
+    <hr class="my-4">
+    <p class="small text-muted mb-1 fw-semibold">Demo accounts (password: <code>Medivault@123</code>)</p>
+    <ul class="small text-muted mb-2 ps-3">
+      <li>Admin — <code>admin</code></li>
+      <li>Doctor — <code>doctor1</code></li>
+      <li>Receptionist — <code>reception1</code></li>
+      <li>Patient — <code>patient1</code></li>
+    </ul>
+    <a href="/" class="small">&larr; Back to home page</a>
+  </div>
+</div>
+{% endblock %}

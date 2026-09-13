@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Print {{ invoice.invoice_id }}{% endblock %}
+{% block page_title %}Invoice{% endblock %}
+{% block content %}
+<div class="mb-3 no-print d-flex gap-2">
+  <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+  <button class="btn btn-success" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</button>
+  <a class="btn btn-outline-secondary" href="{% url 'billing:detail' invoice.pk %}">Back</a>
+</div>
+
+<div class="print-sheet" id="invoiceContent">
+  <div class="print-header d-flex justify-content-between align-items-end">
+    <div><h2>MediVault EHR</h2><small class="text-muted">Secure, Simple &amp; Smart Healthcare Records</small></div>
+    <div class="text-end"><strong>INVOICE</strong><br><small>{{ invoice.invoice_id }}</small></div>
+  </div>
+
+  <div class="d-flex justify-content-between mb-4">
+    <div><strong>Billed to</strong><br>{{ invoice.patient.full_name }}<br>{{ invoice.patient.patient_id }}<br>
+      {{ invoice.patient.phone|default:"" }}<br>{{ invoice.patient.address|default:"" }}</div>
+    <div class="text-end"><strong>Issue date:</strong> {{ invoice.issued_date|date:"d M Y" }}<br>
+      <strong>Paid date:</strong> {{ invoice.paid_date|date:"d M Y"|default:"-" }}<br>
+      <strong>Status:</strong> {{ invoice.payment_status }}<br>
+      <strong>Method:</strong> {{ invoice.payment_method|default:"-" }}</div>
+  </div>
+
+  <table class="table table-bordered">
+    <thead><tr><th>Description</th><th>Appointment</th><th class="text-end">Amount</th></tr></thead>
+    <tbody>
+      <tr><td>{{ invoice.description|default:"Medical services" }}</td>
+        <td>{% if invoice.appointment %}{{ invoice.appointment.appointment_id }} — {{ invoice.appointment.appointment_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+        <td class="text-end">{{ invoice.amount }}</td></tr>
+    </tbody>
+    <tfoot><tr><th colspan="2" class="text-end">Total</th><th class="text-end">{{ invoice.amount }}</th></tr></tfoot>
+  </table>
+
+  <p class="small text-muted mt-4 mb-0">This is an official computer-generated invoice issued by MediVault EHR System.</p>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+  const element = document.getElementById('invoiceContent');
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5],
+    filename: 'Invoice_{{ invoice.invoice_id }}.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Appointments — MediVault{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+{% block page_subtitle %}Schedule and track patient visits{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-calendar-check"></i> {{ page_obj.paginator.count }} appointment(s)</span>
+    {% if user.is_admin or user.is_receptionist %}
+      <a href="{% url 'appointments:add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-calendar-plus"></i> New appointment</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-3"><input class="form-control" name="q" value="{{ query }}" placeholder="ID, patient or reason"></div>
+      <div class="col-md-3"><select class="form-select" name="status"><option value="">All statuses</option>
+        {% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="col-md-2"><input type="date" class="form-control" name="date" value="{{ date }}"></div>
+      <div class="col-md-2"><select class="form-select" name="doctor"><option value="">All doctors</option>
+        {% for d in doctors %}<option value="{{ d.pk }}" {% if doctor == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.full_name }}</option>{% endfor %}</select></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filter</button></div>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for a in page_obj %}
+          <tr><td><span class="badge bg-primary-subtle text-primary">{{ a.appointment_id }}</span></td>
+            <td>{{ a.patient.full_name }}</td><td>{{ a.doctor.full_name }}</td>
+            <td>{{ a.appointment_date|date:"d M Y" }}</td><td>{{ a.appointment_time|time:"H:i" }}</td>
+            <td>{{ a.reason|truncatechars:26 }}</td>
+            <td><span class="badge bg-{{ a.badge }}">{{ a.status }}</span></td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'appointments:detail' a.pk %}"><i class="bi bi-eye"></i></a></td></tr>
+        {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No appointments found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

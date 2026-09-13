@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Patient summary — {{ patient.patient_id }}{% endblock %}
+{% block page_title %}Patient Summary{% endblock %}
+{% block content %}
+<div class="mb-3 no-print d-flex gap-2">
+  <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+  <button class="btn btn-success" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</button>
+  <a class="btn btn-outline-secondary" href="{% url 'patients:patient_detail' patient.pk %}">Back</a>
+</div>
+
+<div class="print-sheet" id="patientSummaryContent">
+  <div class="print-header d-flex justify-content-between align-items-end">
+    <div><h2>MediVault EHR</h2><small class="text-muted">Secure, Simple &amp; Smart Healthcare Records</small></div>
+    <div class="text-end"><strong>Patient Summary</strong><br><small>Printed {% now "d M Y H:i" %}</small></div>
+  </div>
+
+  <table class="table table-sm">
+    <tr><th width="25%">Patient ID</th><td>{{ patient.patient_id }}</td><th width="20%">Name</th><td>{{ patient.full_name }}</td></tr>
+    <tr><th>Date of birth</th><td>{{ patient.date_of_birth|date:"d M Y"|default:"-" }} ({{ patient.age }} yrs)</td><th>Gender</th><td>{{ patient.gender }}</td></tr>
+    <tr><th>Blood group</th><td>{{ patient.blood_group }}</td><th>Phone</th><td>{{ patient.phone|default:"-" }}</td></tr>
+    <tr><th>Address</th><td colspan="3">{{ patient.address|default:"-" }}</td></tr>
+    <tr><th>Allergies</th><td colspan="3">{{ patient.allergies|default:"None recorded" }}</td></tr>
+    <tr><th>Chronic conditions</th><td colspan="3">{{ patient.chronic_conditions|default:"None recorded" }}</td></tr>
+    <tr><th>Emergency contact</th><td colspan="3">{{ patient.emergency_contact_name|default:"-" }} — {{ patient.emergency_contact_phone|default:"-" }}</td></tr>
+  </table>
+
+  <h6 class="mt-4">Recent medical history</h6>
+  <table class="table table-sm table-bordered">
+    <thead><tr><th>Record</th><th>Date</th><th>Doctor</th><th>Diagnosis</th></tr></thead>
+    <tbody>
+      {% for r in records %}<tr><td>{{ r.record_id }}</td><td>{{ r.visit_date|date:"d M Y" }}</td>
+        <td>{{ r.doctor.full_name|default:"-" }}</td><td>{{ r.diagnosis }}</td></tr>
+      {% empty %}<tr><td colspan="4">No medical records.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+
+  <h6 class="mt-4">Recent appointments</h6>
+  <table class="table table-sm table-bordered">
+    <thead><tr><th>ID</th><th>Date</th><th>Doctor</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for a in appointments %}<tr><td>{{ a.appointment_id }}</td>
+        <td>{{ a.appointment_date|date:"d M Y" }} {{ a.appointment_time|time:"H:i" }}</td>
+        <td>{{ a.doctor.full_name }}</td><td>{{ a.status }}</td></tr>
+      {% empty %}<tr><td colspan="4">No appointments.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+
+  <p class="small text-muted mt-4 mb-0">Confidential Patient Health Record &mdash; MediVault EHR System.</p>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+  const element = document.getElementById('patientSummaryContent');
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5],
+    filename: 'Patient_Summary_{{ patient.patient_id }}.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+</script>
+{% endblock %}
+

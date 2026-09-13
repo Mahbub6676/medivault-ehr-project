@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Medical Records — MediVault{% endblock %}
+{% block page_title %}Medical Records{% endblock %}
+{% block page_subtitle %}Clinical documentation of every visit{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-journal-medical"></i> {{ page_obj.paginator.count }} record(s)</span>
+    {% if user.is_doctor or user.is_admin %}
+      <a href="{% url 'medical_records:add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-plus-lg"></i> New record</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-9"><input class="form-control" name="q" value="{{ query }}" placeholder="Record ID, patient or diagnosis"></div>
+      <div class="col-md-3 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Record</th><th>Patient</th><th>Doctor</th><th>Visit date</th><th>Diagnosis</th><th>Follow-up</th><th></th></tr></thead>
+        <tbody>
+        {% for r in page_obj %}
+          <tr><td><span class="badge bg-primary-subtle text-primary">{{ r.record_id }}</span></td>
+            <td>{{ r.patient.full_name }}</td><td>{{ r.doctor.full_name|default:"-" }}</td>
+            <td>{{ r.visit_date|date:"d M Y" }}</td><td>{{ r.diagnosis|truncatechars:38 }}</td>
+            <td>{{ r.follow_up_date|date:"d M Y"|default:"-" }}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'medical_records:detail' r.pk %}"><i class="bi bi-eye"></i></a></td></tr>
+        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No medical records found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

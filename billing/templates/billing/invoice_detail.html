@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.invoice_id }} — MediVault{% endblock %}
+{% block page_title %}Invoice {{ invoice.invoice_id }}{% endblock %}
+{% block page_subtitle %}{{ invoice.patient.full_name }}{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3">
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'billing:print' invoice.pk %}"><i class="bi bi-printer"></i> Print invoice</a>
+  {% if user.is_admin or user.is_receptionist %}
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'billing:edit' invoice.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+    {% if invoice.payment_status != 'Paid' %}
+      <a class="btn btn-sm btn-success" href="{% url 'billing:mark_paid' invoice.pk %}" data-confirm="Mark this invoice as paid?"><i class="bi bi-check2"></i> Mark as paid</a>
+    {% endif %}
+  {% endif %}
+</div>
+
+<div class="record-block">
+  <h6>Invoice details</h6>
+  <dl class="info-list row mb-0">
+    <div class="col-md-6"><dt>Invoice number</dt><dd>{{ invoice.invoice_id }}</dd></div>
+    <div class="col-md-6"><dt>Patient</dt><dd><a href="{% url 'patients:patient_detail' invoice.patient.pk %}">{{ invoice.patient.full_name }}</a> ({{ invoice.patient.patient_id }})</dd></div>
+    <div class="col-md-6"><dt>Appointment</dt><dd>{% if invoice.appointment %}<a href="{% url 'appointments:detail' invoice.appointment.pk %}">{{ invoice.appointment.appointment_id }}</a>{% else %}-{% endif %}</dd></div>
+    <div class="col-md-6"><dt>Description</dt><dd>{{ invoice.description|default:"-" }}</dd></div>
+    <div class="col-md-6"><dt>Amount</dt><dd class="fs-5">{{ invoice.amount }}</dd></div>
+    <div class="col-md-6"><dt>Payment status</dt><dd><span class="badge bg-{{ invoice.badge }}">{{ invoice.payment_status }}</span></dd></div>
+    <div class="col-md-6"><dt>Payment method</dt><dd>{{ invoice.payment_method|default:"-" }}</dd></div>
+    <div class="col-md-6"><dt>Issue date</dt><dd>{{ invoice.issued_date|date:"d M Y" }}</dd></div>
+    <div class="col-md-6"><dt>Paid date</dt><dd>{{ invoice.paid_date|date:"d M Y"|default:"-" }}</dd></div>
+  </dl>
+</div>
+{% endblock %}

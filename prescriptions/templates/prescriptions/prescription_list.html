@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Prescriptions — MediVault{% endblock %}
+{% block page_title %}Prescriptions{% endblock %}
+{% block page_subtitle %}Issued medication plans{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-capsule"></i> {{ page_obj.paginator.count }} prescription(s)</span>
+    {% if user.is_doctor or user.is_admin %}
+      <a href="{% url 'prescriptions:add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-plus-lg"></i> New prescription</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-9"><input class="form-control" name="q" value="{{ query }}" placeholder="Prescription ID, patient or medicine"></div>
+      <div class="col-md-3 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Medicines</th><th></th></tr></thead>
+        <tbody>
+        {% for p in page_obj %}
+          <tr><td><span class="badge bg-primary-subtle text-primary">{{ p.prescription_id }}</span></td>
+            <td>{{ p.patient.full_name }}</td><td>{{ p.doctor.full_name|default:"-" }}</td>
+            <td>{{ p.prescribed_date|date:"d M Y" }}</td><td>{{ p.items.count }}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'prescriptions:detail' p.pk %}"><i class="bi bi-eye"></i></a></td></tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No prescriptions found.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}

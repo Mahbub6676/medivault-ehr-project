@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Patients — MediVault{% endblock %}
+{% block page_title %}Patients{% endblock %}
+{% block page_subtitle %}Search, filter and manage patient records{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <span><i class="bi bi-people"></i> {{ page_obj.paginator.count }} patient(s)</span>
+    {% if user.is_admin or user.is_receptionist %}
+      <a href="{% url 'patients:patient_add' %}" class="btn btn-primary btn-sm ms-auto"><i class="bi bi-person-plus"></i> Register patient</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <form class="row g-2 mb-3" method="get">
+      <div class="col-md-4"><input class="form-control" name="q" value="{{ query }}" placeholder="Name, Patient ID or phone"></div>
+      <div class="col-md-3"><select class="form-select" name="gender">
+        <option value="">All genders</option>
+        {% for v, l in genders %}<option value="{{ v }}" {% if gender == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select></div>
+      <div class="col-md-3"><select class="form-select" name="status">
+        <option value="">All statuses</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+      </select></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button></div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Patient ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Blood</th><th>Phone</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        {% for p in page_obj %}
+          <tr>
+            <td><span class="badge bg-primary-subtle text-primary">{{ p.patient_id }}</span></td>
+            <td><a href="{% url 'patients:patient_detail' p.pk %}">{{ p.full_name }}</a></td>
+            <td>{{ p.age }}</td><td>{{ p.gender }}</td><td>{{ p.blood_group }}</td><td>{{ p.phone|default:"-" }}</td>
+            <td>{% if p.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'patients:patient_detail' p.pk %}"><i class="bi bi-eye"></i></a>
+              {% if user.is_admin or user.is_receptionist %}
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'patients:patient_edit' p.pk %}"><i class="bi bi-pencil"></i></a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">No patients found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" with querystring="" %}
+  </div>
+</div>
+{% endblock %}
